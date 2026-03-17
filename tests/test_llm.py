@@ -20,12 +20,11 @@ class TestCallClaude:
         assert result == {"key": "value"}
 
     @patch("estimator.llm.subprocess.run")
-    def test_structured_output_response(self, mock_run):
+    def test_json_with_schema_in_prompt(self, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
             stdout=json.dumps({
-                "result": "some text",
-                "structured_output": {"name": "test", "value": 42},
+                "result": '{"name": "test", "value": 42}',
             }).encode(),
             stderr=b"",
         )
@@ -34,6 +33,10 @@ class TestCallClaude:
             json_schema={"type": "object"},
         )
         assert result == {"name": "test", "value": 42}
+        # Verify schema was embedded in the prompt passed to CLI
+        cmd = mock_run.call_args[0][0]
+        prompt_arg = cmd[cmd.index("-p") + 1]
+        assert "JSON SCHEMA" in prompt_arg
 
     @patch("estimator.llm.subprocess.run")
     def test_nonzero_exit_code_raises(self, mock_run):
@@ -91,11 +94,23 @@ class TestCallClaude:
         assert "claude-opus-4-6" in cmd
 
     @patch("estimator.llm.subprocess.run")
-    def test_stdin_passed_when_input_text_provided(self, mock_run):
+    def test_input_text_included_in_prompt(self, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
             stdout=json.dumps({"result": '{"ok": true}'}).encode(),
             stderr=b"",
         )
         call_claude("test prompt", input_text="some transcript text")
-        assert mock_run.call_args[1]["input"] == b"some transcript text"
+        cmd = mock_run.call_args[0][0]
+        prompt_arg = cmd[cmd.index("-p") + 1]
+        assert "some transcript text" in prompt_arg
+
+    @patch("estimator.llm.subprocess.run")
+    def test_strips_markdown_code_fences(self, mock_run):
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout=json.dumps({"result": '```json\n{"key": "value"}\n```'}).encode(),
+            stderr=b"",
+        )
+        result = call_claude("test prompt")
+        assert result == {"key": "value"}

@@ -96,7 +96,7 @@ def run_pipeline(
         _save_stage_output(output_dir, "01_extraction", extraction.model_dump())
 
     if verbose:
-        console.print(f"  [green]✓[/] Extracted {len(extraction.workloads)} workload(s)")
+        console.print(f"  [green]OK[/] Extracted {len(extraction.workloads)} workload(s)")
 
     # Stage 2: Architect
     if verbose:
@@ -108,7 +108,7 @@ def run_pipeline(
 
     if verbose:
         console.print(
-            f"  [green]✓[/] Strategy: {architecture.migration_strategy}, "
+            f"  [green]OK[/] Strategy: {architecture.migration_strategy}, "
             f"Size: {architecture.tshirt_size.size}"
         )
 
@@ -124,7 +124,7 @@ def run_pipeline(
 
     if verbose:
         console.print(
-            f"  [green]✓[/] Likely total: ${estimate.likely.total_first_year:,} "
+            f"  [green]OK[/] Likely total: ${estimate.likely.total_first_year:,} "
             f"({estimate.timeline_likely.duration_weeks} weeks)"
         )
 
@@ -138,7 +138,7 @@ def run_pipeline(
 
     if verbose:
         console.print(
-            f"  [green]✓[/] Found {len(gaps.gaps)} gap(s), "
+            f"  [green]OK[/] Found {len(gaps.gaps)} gap(s), "
             f"{len(gaps.follow_up_questions)} follow-up question(s)"
         )
 
@@ -159,6 +159,6 @@ def run_pipeline(
     report_path.write_text(report_content, encoding="utf-8")
 
     if verbose:
-        console.print(f"  [green]✓[/] Report saved to {report_path}")
+        console.print(f"  [green]OK[/] Report saved to {report_path}")
 
     return report_path

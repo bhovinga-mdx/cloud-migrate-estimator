@@ -22,7 +22,7 @@ def run_extract(transcript: str, model: str = "claude-opus-4-6") -> ExtractionRe
     schema = ExtractionResult.model_json_schema()
 
     result = call_claude(
-        prompt="Extract all migration-relevant information from the transcript provided via stdin.",
+        prompt="Extract all migration-relevant information from the following transcript.",
         model=model,
         system_prompt=system_prompt,
         json_schema=schema,

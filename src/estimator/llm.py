@@ -5,17 +5,9 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from pydantic import BaseModel
-
 
 class LLMError(Exception):
     """Raised when Claude Code CLI call fails."""
-
-
-class LLMResponse(BaseModel):
-    result: str
-    model: str = ""
-    session_id: str = ""
 
 
 def call_claude(
@@ -32,12 +24,12 @@ def call_claude(
         prompt: The user prompt to send.
         model: Model to use (e.g., claude-opus-4-6, claude-sonnet-4-6).
         system_prompt: Optional system prompt (written to temp file to avoid CLI length limits).
-        json_schema: Optional JSON schema for structured output.
+        json_schema: Optional JSON schema to embed in prompt for structured output.
         input_text: Optional text to pipe via stdin (e.g., transcript content).
         max_retries: Number of retries on failure.
 
     Returns:
-        Parsed structured output dict if json_schema provided, otherwise raw result dict.
+        Parsed JSON dict from Claude's response.
     """
     attempts = 0
     last_error: Exception | None = None
@@ -52,6 +44,34 @@ def call_claude(
     raise LLMError(f"Failed after {attempts} attempts: {last_error}")
 
 
+def _build_full_prompt(
+    prompt: str,
+    system_prompt: str | None,
+    json_schema: dict | None,
+    input_text: str | None,
+) -> str:
+    """Build the full prompt file content, combining system prompt, schema, and user prompt."""
+    parts = []
+
+    if system_prompt:
+        parts.append(system_prompt)
+
+    if json_schema:
+        schema_str = json.dumps(json_schema, indent=2)
+        parts.append(
+            "Respond ONLY with valid JSON matching this exact schema. "
+            "No markdown, no code fences, no explanation — just the JSON object.\n\n"
+            f"JSON SCHEMA:\n{schema_str}"
+        )
+
+    parts.append(prompt)
+
+    if input_text:
+        parts.append(f"\n---\nINPUT:\n{input_text}")
+
+    return "\n\n".join(parts)
+
+
 def _execute_claude(
     prompt: str,
     model: str,
@@ -60,56 +80,70 @@ def _execute_claude(
     input_text: str | None,
 ) -> dict:
     """Execute a single Claude Code CLI call."""
-    cmd = ["claude", "-p", prompt, "--model", model, "--output-format", "json"]
-    temp_files: list[Path] = []
+    # Build full prompt and write to temp file to avoid command line length limits
+    full_prompt = _build_full_prompt(prompt, system_prompt, json_schema, input_text)
+
+    prompt_file = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".md", delete=False, encoding="utf-8"
+    )
+    prompt_file.write(full_prompt)
+    prompt_file.close()
+    prompt_file_path = Path(prompt_file.name)
 
     try:
-        if system_prompt:
-            sp_file = tempfile.NamedTemporaryFile(
-                mode="w", suffix=".txt", delete=False, encoding="utf-8"
-            )
-            sp_file.write(system_prompt)
-            sp_file.close()
-            temp_files.append(Path(sp_file.name))
-            cmd.extend(["--system-prompt-file", sp_file.name])
+        # Read prompt from file via stdin to avoid Windows CLI length limits
+        with open(prompt_file_path, encoding="utf-8") as f:
+            prompt_content = f.read()
 
-        if json_schema:
-            schema_str = json.dumps(json_schema)
-            cmd.extend(["--json-schema", schema_str])
+        cmd = [
+            "claude",
+            "-p",
+            prompt_content,
+            "--model",
+            model,
+            "--output-format",
+            "json",
+        ]
 
-        stdin_data = input_text.encode("utf-8") if input_text else None
-
+        env = {**subprocess.os.environ, "PYTHONIOENCODING": "utf-8"}
         result = subprocess.run(
             cmd,
             capture_output=True,
-            stdin=subprocess.PIPE if stdin_data else None,
-            input=stdin_data,
-            timeout=300,  # 5 minute timeout per stage
+            timeout=600,  # 10 minute timeout per stage
+            env=env,
         )
 
         if result.returncode != 0:
             stderr = result.stderr.decode("utf-8", errors="replace")
-            raise LLMError(f"Claude CLI exited with code {result.returncode}: {stderr}")
+            raise LLMError(
+                f"Claude CLI exited with code {result.returncode}: {stderr[:500]}"
+            )
 
         stdout = result.stdout.decode("utf-8", errors="replace")
 
         try:
             response = json.loads(stdout)
         except json.JSONDecodeError as e:
-            raise LLMError(f"Failed to parse CLI JSON output: {e}\nRaw output: {stdout[:500]}")
-
-        if json_schema and "structured_output" in response:
-            return response["structured_output"]
+            raise LLMError(
+                f"Failed to parse CLI JSON output: {e}\nRaw output: {stdout[:500]}"
+            )
 
         if "result" in response:
-            # Try to parse result as JSON (for non-schema responses)
+            result_text = response["result"]
+            # Strip markdown code fences if present
+            if result_text.startswith("```"):
+                lines = result_text.split("\n")
+                # Remove first and last lines (fences)
+                lines = [line for line in lines if not line.startswith("```")]
+                result_text = "\n".join(lines)
             try:
-                return json.loads(response["result"])
+                return json.loads(result_text)
             except (json.JSONDecodeError, TypeError):
-                return response
+                raise LLMError(
+                    f"Claude response is not valid JSON:\n{result_text[:500]}"
+                )
 
         return response
 
     finally:
-        for f in temp_files:
-            f.unlink(missing_ok=True)
+        prompt_file_path.unlink(missing_ok=True)
