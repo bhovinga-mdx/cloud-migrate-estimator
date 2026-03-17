@@ -1,0 +1,168 @@
+# Cloud Migration Estimate
+
+**Generated:** {{ generated_date }}
+**Confidence:** {{ estimate.confidence_percentage }}% (+/- {{ 100 - estimate.confidence_percentage }}%)
+
+---
+
+## Executive Summary
+
+This estimate covers a cloud migration engagement using a **{{ architecture.migration_strategy }}** strategy. The target environment is sized as **{{ architecture.tshirt_size.size }}** ({{ architecture.tshirt_size.justification | truncate(100) }}).
+
+| Scenario | Total First-Year Cost | Timeline | AWS Monthly |
+|----------|----------------------|----------|-------------|
+| Optimistic | ${{ "{:,}".format(estimate.optimistic.total_first_year) }} | {{ estimate.timeline_optimistic.duration_weeks }} weeks | ${{ "{:,}".format(estimate.optimistic.aws_monthly_cost) }}/mo |
+| **Likely** | **${{ "{:,}".format(estimate.likely.total_first_year) }}** | **{{ estimate.timeline_likely.duration_weeks }} weeks** | **${{ "{:,}".format(estimate.likely.aws_monthly_cost) }}/mo** |
+| Pessimistic | ${{ "{:,}".format(estimate.pessimistic.total_first_year) }} | {{ estimate.timeline_pessimistic.duration_weeks }} weeks | ${{ "{:,}".format(estimate.pessimistic.aws_monthly_cost) }}/mo |
+
+---
+
+## Scope & Current Environment
+
+**Infrastructure Type:** {{ extraction.current_environment.infrastructure_type or "Not specified" }}
+
+{% if extraction.current_environment.operating_systems %}
+**Operating Systems:** {{ extraction.current_environment.operating_systems | join(", ") }}
+{% endif %}
+
+{% if extraction.current_environment.databases %}
+**Databases:** {{ extraction.current_environment.databases | join(", ") }}
+{% endif %}
+
+{% if extraction.current_environment.applications %}
+**Applications:** {{ extraction.current_environment.applications | join(", ") }}
+{% endif %}
+
+{% if extraction.migration_context.drivers %}
+### Migration Drivers
+{% for driver in extraction.migration_context.drivers %}
+- {{ driver }}
+{% endfor %}
+{% endif %}
+
+{% if extraction.migration_context.pain_points %}
+### Pain Points
+{% for pain in extraction.migration_context.pain_points %}
+- {{ pain }}
+{% endfor %}
+{% endif %}
+
+{% if extraction.workloads %}
+### Workloads
+{% for workload in extraction.workloads %}
+- **{{ workload.description }}**{% if workload.estimated_count %} ({{ workload.estimated_count }} workloads){% endif %}{% if workload.data_volume %} — {{ workload.data_volume }}{% endif %}{% if workload.criticality %} [{{ workload.criticality }} criticality]{% endif %}
+
+{% endfor %}
+{% endif %}
+
+---
+
+## Target Architecture
+
+### Strategy: {{ architecture.migration_strategy | title }}
+
+{{ architecture.strategy_justification }}
+
+### Architecture Overview
+
+{{ architecture.architecture_narrative }}
+
+### AWS Services
+
+| Service | Purpose | Notes |
+|---------|---------|-------|
+{% for svc in architecture.target_services %}
+| {{ svc.service }} | {{ svc.purpose }} | {{ svc.configuration_notes or "-" }} |
+{% endfor %}
+
+### AWS Cost Estimate (T-Shirt Size: {{ architecture.tshirt_size.size }})
+
+- **Range:** ${{ "{:,}".format(architecture.tshirt_size.estimated_monthly_cost_low) }} - ${{ "{:,}".format(architecture.tshirt_size.estimated_monthly_cost_high) }}/month
+- **Point Estimate:** ${{ "{:,}".format(architecture.tshirt_size.point_estimate_monthly) }}/month
+- **Justification:** {{ architecture.tshirt_size.justification }}
+
+### Migration Phases
+
+{% for phase in architecture.phases | sort(attribute='order') %}
+{{ phase.order }}. **{{ phase.name }}** — {{ phase.description }}
+{% endfor %}
+
+---
+
+## Resource Plan & Cost Breakdown
+
+### Roles
+
+| Role | Optimistic (hrs) | Likely (hrs) | Pessimistic (hrs) | Rate |
+|------|------------------|--------------|--------------------|------|
+{% for role in estimate.roles %}
+| {{ role.title }} | {{ role.hours_optimistic }} | {{ role.hours_likely }} | {{ role.hours_pessimistic }} | ${{ "{:,}".format(rate_card.roles[role.role].hourly_rate) }}/hr |
+{% endfor %}
+
+### Cost Summary
+
+| Component | Optimistic | Likely | Pessimistic |
+|-----------|-----------|--------|-------------|
+| Labor | ${{ "{:,}".format(estimate.optimistic.labor_cost) }} | ${{ "{:,}".format(estimate.likely.labor_cost) }} | ${{ "{:,}".format(estimate.pessimistic.labor_cost) }} |
+| AWS (Monthly) | ${{ "{:,}".format(estimate.optimistic.aws_monthly_cost) }} | ${{ "{:,}".format(estimate.likely.aws_monthly_cost) }} | ${{ "{:,}".format(estimate.pessimistic.aws_monthly_cost) }} |
+| AWS (First Year) | ${{ "{:,}".format(estimate.optimistic.aws_first_year_cost) }} | ${{ "{:,}".format(estimate.likely.aws_first_year_cost) }} | ${{ "{:,}".format(estimate.pessimistic.aws_first_year_cost) }} |
+| **Total First Year** | **${{ "{:,}".format(estimate.optimistic.total_first_year) }}** | **${{ "{:,}".format(estimate.likely.total_first_year) }}** | **${{ "{:,}".format(estimate.pessimistic.total_first_year) }}** |
+
+### Timeline
+
+| Scenario | Duration | Description |
+|----------|----------|-------------|
+| Optimistic | {{ estimate.timeline_optimistic.duration_weeks }} weeks | {{ estimate.timeline_optimistic.description }} |
+| **Likely** | **{{ estimate.timeline_likely.duration_weeks }} weeks** | **{{ estimate.timeline_likely.description }}** |
+| Pessimistic | {{ estimate.timeline_pessimistic.duration_weeks }} weeks | {{ estimate.timeline_pessimistic.description }} |
+
+### Scenario Spread Justification
+
+{{ estimate.spread_justification }}
+
+---
+
+## Assumptions
+
+{% for assumption in estimate.key_assumptions %}
+- {{ assumption }}
+{% endfor %}
+
+---
+
+## Gap Analysis
+
+### Overall Confidence
+
+{{ gaps.overall_confidence }}
+
+{% if gaps.gaps %}
+### Information Gaps
+
+| Category | Gap | Impact | Severity |
+|----------|-----|--------|----------|
+{% for gap in gaps.gaps %}
+| {{ gap.category }} | {{ gap.description }} | {{ gap.impact }} | {{ gap.severity }} |
+{% endfor %}
+{% endif %}
+
+{% if gaps.follow_up_questions %}
+### Recommended Follow-Up Questions
+
+{% for q in gaps.follow_up_questions %}
+{{ loop.index }}. **{{ q.question }}** ({{ q.priority }} priority)
+   - *Why:* {{ q.rationale }}
+{% endfor %}
+{% endif %}
+
+{% if gaps.risk_factors %}
+### Risk Factors
+
+{% for risk in gaps.risk_factors %}
+- {{ risk }}
+{% endfor %}
+{% endif %}
+
+---
+
+*This estimate was generated by an AI-powered estimation tool and should be reviewed by a qualified engineer before sharing with the client.*

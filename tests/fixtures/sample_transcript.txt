@@ -1,0 +1,79 @@
+Sales Call Transcript — Acme Corp Cloud Migration Discussion
+Date: March 10, 2026
+Attendees: Sarah Chen (Mindex Sales), Mike Torres (Mindex Solutions Architect), John Smith (Acme Corp CTO), Lisa Park (Acme Corp IT Director)
+
+---
+
+Sarah: Thanks for joining today, John and Lisa. We're excited to learn more about what Acme Corp is looking for. Mike's here from our engineering side to dig into the technical details. Why don't you start by telling us what's driving this conversation?
+
+John: Yeah, sure. So basically our data center lease is up at the end of next year — Q4 2026 — and we've been kicking around the idea of moving to the cloud for a while now. The lease renewal they're offering us is... not great. And honestly, our hardware is getting long in the tooth anyway. Most of our servers are 5-6 years old at this point.
+
+Lisa: Yeah, and we're having scaling issues. When we do our end-of-quarter processing, things get really slow. We've been throwing hardware at it but that's not sustainable.
+
+Mike: Makes sense. Can you walk us through what your current environment looks like?
+
+Lisa: Sure, so we've got about... I want to say around 15 servers? Mix of Windows Server — mostly 2016, a couple still on 2012 R2 that we really need to get off of — and then some Red Hat Linux boxes for our backend services.
+
+Mike: And what's running on those?
+
+John: Our main thing is the ERP system — it's a custom-built app that's been around for about 12 years now. That's our bread and butter. Then we have a customer-facing portal, um, that's a .NET application. And then various internal tools — HR system, reporting dashboards, that kind of thing.
+
+Mike: What about databases?
+
+Lisa: SQL Server 2016 is our primary for the ERP and the portal. And then we have — and this is kind of a pain point — an Oracle 12c instance that our legacy reporting system runs on. We've been wanting to get off Oracle for years but it's... complicated.
+
+Mike: Yeah, Oracle migrations can be tricky. How much data are we talking about?
+
+Lisa: Total across everything, probably around 50 terabytes? The bulk of that is in the ERP database and then we have a bunch of file shares. The Oracle instance is maybe 2-3 terabytes on its own.
+
+Sarah: And John, you mentioned budget earlier on our pre-call — is there a target you're working toward?
+
+John: Yeah, I mean, we'd like to keep the whole thing under 500K if possible. That includes the migration itself and the first year of running costs. But honestly, if the ROI makes sense and you can show us the numbers, there might be some flexibility there. The board is... cautiously supportive.
+
+Mike: Good to know. What about compliance? Any regulatory requirements we should be aware of?
+
+John: We're SOC 2 Type II certified and we need to maintain that. That's non-negotiable. Our auditors would, uh, have opinions if we lost that.
+
+Lisa: And we need to keep VPN connectivity during the migration — we can't have any gaps there because some of our partners connect to us through site-to-site VPNs.
+
+Mike: That's totally doable. What about your networking setup currently?
+
+Lisa: Pretty traditional. VLANs, single data center, we've got a — what is it, a 1 gig connection? No wait, we upgraded to 10 gig last year. And then we use NetApp for storage, that's where the 50TB number comes from.
+
+Sarah: Lisa, when you think about the timeline, what does that look like from your end?
+
+Lisa: Well, the lease is up in Q4 2026, so ideally we'd be fully migrated before that. But realistically, I know these things take time. If we could at least have the critical stuff moved by then and clean up the rest shortly after, that would work.
+
+John: The other thing I should mention — we're looking at this as an opportunity to maybe modernize some things. Not a complete rewrite, obviously, but if there are places where we can take advantage of cloud services instead of just doing a straight lift-and-shift, we're open to that.
+
+Mike: That's a great mindset. Especially for things like the Oracle situation — there might be an opportunity to migrate that to PostgreSQL on RDS, for example.
+
+John: Yeah, our team has been looking at that. We have a developer who's done some initial investigation but honestly we just don't have the bandwidth to take that on ourselves on top of everything else.
+
+Lisa: Oh, and I should mention — our Active Directory is on-prem too, and we've got internal DNS. That would need to be handled as part of this.
+
+Mike: Absolutely. Those are usually some of the first things we address. Any idea how many users are on the AD?
+
+Lisa: About 350 users total. Mix of office and a few remote workers who VPN in.
+
+Sarah: This is really helpful. Mike, do you have what you need for an initial estimate?
+
+Mike: I think so. Let me just confirm a few things — the ERP system, is that something that could tolerate a few hours of downtime for the migration, or are we talking zero-downtime?
+
+John: We can schedule maintenance windows on weekends. The ERP doesn't need to be up 24/7 — it's mainly used during business hours. The customer portal, though, that's a different story. That needs to stay up.
+
+Mike: Got it. And the HR system and reporting — are those lower priority?
+
+Lisa: Yeah, those could move last. They're not customer-facing so if they're down for a bit during migration, nobody's going to panic.
+
+John: One more thing — we've been hearing a lot about AI and... I don't want to get ahead of ourselves, but down the road, is the cloud setup going to position us to potentially use some AI tools for analytics? That's something the board has been asking about.
+
+Sarah: Absolutely, and that's actually one of Mindex's strengths — our AI development practice. But you're right, let's get the migration squared away first and then we can explore that as a phase two.
+
+John: Perfect. So what are the next steps from here?
+
+Sarah: We'll put together an initial estimate with ballpark costs and timeline — you should have that within the next few days. Then we can schedule a follow-up to walk through it together. Sound good?
+
+John: Sounds great. Thanks, Sarah, Mike.
+
+Lisa: Yeah, thanks. Looking forward to seeing what you come up with.

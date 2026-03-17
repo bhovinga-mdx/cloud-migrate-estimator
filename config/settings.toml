@@ -1,0 +1,19 @@
+# Pipeline settings
+
+[models]
+extract = "claude-opus-4-6"
+architect = "claude-sonnet-4-6"
+estimate = "claude-opus-4-6"
+gaps = "claude-sonnet-4-6"
+
+[pipeline]
+# Max retries per stage on failure
+max_retries = 1
+# Max transcript size in characters (rough proxy for tokens)
+max_transcript_chars = 400000
+
+[output]
+# Default output directory (relative to CWD)
+output_dir = "estimates"
+# Save intermediate stage outputs
+save_intermediates = true

@@ -1,0 +1,30 @@
+# AWS t-shirt sizing baselines
+# Cost ranges represent estimated monthly AWS spend
+
+[sizes.S]
+label = "Small"
+description = "< 10 workloads, simple architecture (few EC2, single RDS, basic S3)"
+monthly_cost_low = 1000
+monthly_cost_high = 5000
+typical_workload_count = "1-9"
+
+[sizes.M]
+label = "Medium"
+description = "10-50 workloads, moderate complexity (multi-AZ, managed services, some data pipeline)"
+monthly_cost_low = 5000
+monthly_cost_high = 25000
+typical_workload_count = "10-50"
+
+[sizes.L]
+label = "Large"
+description = "50-200 workloads, complex architecture (multi-region, HA, significant data/analytics)"
+monthly_cost_low = 25000
+monthly_cost_high = 100000
+typical_workload_count = "50-200"
+
+[sizes.XL]
+label = "Extra Large"
+description = "200+ workloads, enterprise-scale (multi-account, hybrid, compliance-heavy, large data estate)"
+monthly_cost_low = 100000
+monthly_cost_high = 500000
+typical_workload_count = "200+"

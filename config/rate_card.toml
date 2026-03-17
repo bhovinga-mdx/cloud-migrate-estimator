@@ -1,0 +1,34 @@
+# Rate card — update with actual Mindex rates
+# Rates are hourly in USD
+
+[roles.solutions_architect]
+title = "Solutions Architect"
+hourly_rate = 250
+
+[roles.cloud_engineer]
+title = "Cloud Engineer"
+hourly_rate = 200
+
+[roles.devops_engineer]
+title = "DevOps Engineer"
+hourly_rate = 200
+
+[roles.data_engineer]
+title = "Data Engineer"
+hourly_rate = 200
+
+[roles.project_manager]
+title = "Project Manager"
+hourly_rate = 175
+
+[roles.security_engineer]
+title = "Security Engineer"
+hourly_rate = 225
+
+[roles.database_administrator]
+title = "Database Administrator"
+hourly_rate = 200
+
+[roles.qa_engineer]
+title = "QA Engineer"
+hourly_rate = 175
